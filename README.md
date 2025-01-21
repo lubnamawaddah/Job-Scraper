@@ -1,6 +1,6 @@
 # Job Scraping Web Application
 
-This is a web scraping application built with Flask and Python that allows users to scrape job listings from multiple job sites (e.g., Jobstreet, Loker.id, Kalibrr) based on a keyword.
+This project implements multi-threaded web scraping to extract job listings from multiple websites (e.g., Jobstreet, Loker.id, Kalibrr) based on user-specified keywords. Built using Python for the backend and Flask for the web interface, it leverages Selenium to automate the scraping process. Users can select which job sites to scrape and view the results dynamically on the web interface.
 
 ## Preview Application
 
