@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraping Results</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <!-- Header Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">Job Scraping Results</h1>
+            <div class="flex items-center space-x-2 text-gray-600">
+                <i class="fas fa-search"></i>
+                <span class="text-lg">Keyword : </span>
+                <span class="text-lg font-semibold text-blue-600">{{ keyword }}</span>
+            </div>
+        
+            <div class="mt-2 text-gray-600">
+                <i class="fas fa-globe mr-2"></i>
+                <span class="text-lg">Source : </span>
+                <span class="text-lg font-semibold text-green-600">
+                    {% if selected_sites %}
+                        {{ selected_sites | join(', ') }}
+                    {% else %}
+                        No sources selected
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <div class="flex flex-wrap gap-4 mb-6">
+            <!-- Back to Home Button -->
+            <a href="{{ url_for('home') }}" 
+            class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Home
+            </a>
+            
+            <!-- Scraping Time -->
+            <div class="ml-auto flex items-center text-gray-600">
+                <span class="text-lg mr-2">Scraping Duration :</span>
+                <span class="text-lg font-semibold text-green-600">{{ '%.2f' % scraping_duration }} seconds</span>
+            </div>            
+        </div>
+
+        <!-- Results Table -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">No</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Position</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Company</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Location</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Salary</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Upload Time</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Link</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for index, row in data.iterrows() %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-gray-800 font-medium">{{ row['No'] }}</td>
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-gray-900">{{ row['Position'] }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-800">{{ row['Company'] }}</td>
+                            <td class="px-6 py-4 text-gray-800">
+                                <div class="flex items-center">
+                                    <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                                    {{ row['Location'] }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-800">{{ row['Salary'] }}</td>
+                            <td class="px-6 py-4 text-gray-800">
+                                <div class="flex items-center">
+                                    <i class="far fa-clock mr-2"></i>
+                                    {{ row['Upload Time'] }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="{{ row['Link'] }}" 
+                                   target="_blank"
+                                   class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
+                                    <i class="fas fa-external-link-alt mr-1"></i>
+                                    Link
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination Section -->
+        <div class="flex justify-center mt-6">
+            <nav class="inline-flex items-center space-x-2">
+                <!-- Previous Button -->
+                {% if page > 1 %}
+                <a href="{{ url_for('scrape', page=page-1, keyword=keyword, sites=selected_sites) }}" 
+                class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+                {% endif %}
+        
+                <!-- Pages Around Active Page -->
+                {% for p in range(page-1, page+2) %}
+                {% if p > 0 and p <= total_pages %}
+                <a href="{{ url_for('scrape', page=p, keyword=keyword, sites=selected_sites) }}" 
+                class="px-4 py-2 text-sm font-medium {{ 'bg-blue-600 text-white' if p == page else 'bg-white text-gray-600' }} border rounded-lg hover:bg-gray-100">
+                    {{ p }}
+                </a>
+                {% endif %}
+                {% endfor %}
+        
+                <!-- Next Button -->
+                {% if page < total_pages %}
+                <a href="{{ url_for('scrape', page=page+1, keyword=keyword, sites=selected_sites) }}" 
+                class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+</body>
+</html>
